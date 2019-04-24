@@ -315,7 +315,7 @@ public class ControlPanel extends JPanel implements SimulatorObserver{
 	
 	// other private/protected method
 	private void run_sim(int n, long delay) {
-		if (n > 0 && Thread.interrupted()) {
+		if (n > 0 && !Thread.interrupted()) {
 			try {
 				_ctrl.run(1);
 			} catch (Exception e) {
