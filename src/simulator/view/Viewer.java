@@ -1,4 +1,4 @@
-	package simulator.view;
+package simulator.view;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -16,6 +16,8 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
@@ -176,23 +178,43 @@ public class Viewer extends JComponent implements SimulatorObserver {
 	public void onRegister(List<Body> bodies, double time, double dt, String gLawsDesc) {
 		_bodies = new ArrayList<Body>(bodies);
 		autoScale();
-		repaint();
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				repaint();
+			}
+		});
 	}
 	@Override
 	public void onReset(List<Body> bodies, double time, double dt, String gLawsDesc) {
 		_bodies.clear();
 		autoScale();
-		repaint();
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				repaint();
+			}
+		});
 	}
 	@Override
 	public void onBodyAdded(List<Body> bodies, Body b) {
 		_bodies.add(b);
 		autoScale();
-		repaint();
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				repaint();
+			}
+		});
 	}
 	@Override
 	public void onAdvance(List<Body> bodies, double time) {
-		repaint();
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				repaint();
+			}
+		});
 	}
 	@Override
 	public void onDeltaTimeChanged(double dt) {

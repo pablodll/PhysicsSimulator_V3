@@ -21,8 +21,8 @@ public class ControlPanel extends JPanel implements SimulatorObserver{
 	private final Double _deltaTimeDefaultValue = 2500d;
 	
 	private Controller _ctrl;
-	private boolean _stopped;
 	private Double _deltaTime;
+	private volatile Thread _thread;
 	
 	private JToolBar toolBar1;
 	private JToolBar toolBar2;
@@ -44,7 +44,6 @@ public class ControlPanel extends JPanel implements SimulatorObserver{
 	
 	ControlPanel(Controller ctrl) {
 		_ctrl = ctrl;
-		_stopped = true;
 		_deltaTime = _deltaTimeDefaultValue;
 		initGUI();
 		_ctrl.addObserver(this);
@@ -173,12 +172,25 @@ public class ControlPanel extends JPanel implements SimulatorObserver{
 					deltaTimeText.setEnabled(false);
 					delaySpinner.setEnabled(false);
 //					clearButton.setEnabled(false);
-	
-					_stopped = false;
 					
 					_ctrl.setDeltaTime(_deltaTime);
+	
+					_thread = new Thread(new Runnable() {
+						@Override
+						public void run() {
+							run_sim(Integer.parseInt(stepSpinner.getValue().toString()),
+									Long.parseLong(delaySpinner.getValue().toString()));
+							setEnableAll(true);
+							_thread = null;
+						}
+					});
 					
-					run_sim(Integer.parseInt(stepSpinner.getValue().toString()));
+					_thread.start();
+					
+//					_stopped = false;				
+//					
+//					run_sim(Integer.parseInt(stepSpinner.getValue().toString()),
+//							Long.parseLong(delaySpinner.getValue().toString()));
 				}	
 			}
 		});
@@ -196,8 +208,8 @@ public class ControlPanel extends JPanel implements SimulatorObserver{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if(e.getSource() == stopButton) {
-					_stopped = true;
 					setEnableAll(true);
+					if(_thread != null) _thread.interrupt();
 				}	
 			}
 		});
@@ -302,30 +314,40 @@ public class ControlPanel extends JPanel implements SimulatorObserver{
 	}
 	
 	// other private/protected method
-	private void run_sim(int n) {
-		if ( n>0 && !_stopped ) {
+	private void run_sim(int n, long delay) {
+		if (n > 0 && Thread.interrupted()) {
 			try {
 				_ctrl.run(1);
 			} catch (Exception e) {
 				// Show the error in a dialog box
-				JOptionPane.showMessageDialog(null, e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						JOptionPane.showMessageDialog(null, e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);	
+					}
+				});
 				
 				// Enable all buttons
 				setEnableAll(true);
 				
-				_stopped = true;
+				return;
+			}
+			
+			try {
+				Thread.sleep(delay);
+			} catch (InterruptedException e) {
+				//_thread.interrupt();
 				return;
 			}
 			
 			SwingUtilities.invokeLater( new Runnable() {
 				@Override
 				public void run() {
-					run_sim(n-1);
+					run_sim(n-1, delay);
 				}
 			});
 			
 		} else {
-			_stopped = true;
 			// Enable all buttons
 			setEnableAll(true);
 		}
