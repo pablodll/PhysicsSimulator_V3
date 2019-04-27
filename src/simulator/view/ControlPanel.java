@@ -165,13 +165,18 @@ public class ControlPanel extends JPanel implements SimulatorObserver{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if(e.getSource() == startButton) {
-					loadButton.setEnabled(false);
-					lawsButton.setEnabled(false);
-					startButton.setEnabled(false);
-					stepSpinner.setEnabled(false);
-					deltaTimeText.setEnabled(false);
-					delaySpinner.setEnabled(false);
-//					clearButton.setEnabled(false);
+					SwingUtilities.invokeLater(new Runnable() {	
+						@Override
+						public void run() {
+							loadButton.setEnabled(false);
+							lawsButton.setEnabled(false);
+							startButton.setEnabled(false);
+							stepSpinner.setEnabled(false);
+							deltaTimeText.setEnabled(false);
+							delaySpinner.setEnabled(false);
+//							clearButton.setEnabled(false);
+						}
+					});
 					
 					_ctrl.setDeltaTime(_deltaTime);
 	
@@ -180,7 +185,7 @@ public class ControlPanel extends JPanel implements SimulatorObserver{
 						public void run() {
 							run_sim(Integer.parseInt(stepSpinner.getValue().toString()),
 									Long.parseLong(delaySpinner.getValue().toString()));
-							setEnableAll(true);
+							//setEnableAll(true);
 							_thread = null;
 						}
 					});
@@ -208,7 +213,6 @@ public class ControlPanel extends JPanel implements SimulatorObserver{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if(e.getSource() == stopButton) {
-					setEnableAll(true);
 					if(_thread != null) _thread.interrupt();
 				}	
 			}
@@ -329,39 +333,33 @@ public class ControlPanel extends JPanel implements SimulatorObserver{
 				
 				// Enable all buttons
 				setEnableAll(true);
-				
 				return;
 			}
 			
 			try {
 				Thread.sleep(delay);
+				run_sim(n-1, delay);
 			} catch (InterruptedException e) {
-				//_thread.interrupt();
+				setEnableAll(true);
 				return;
 			}
 			
-			SwingUtilities.invokeLater( new Runnable() {
-				@Override
-				public void run() {
-					run_sim(n-1, delay);
-				}
-			});
-			
-		} else {
+		}
+		else {
 			// Enable all buttons
 			setEnableAll(true);
 		}
 	}
 	
 	private void setEnableAll(boolean enable) {
-		loadButton.setEnabled(enable);
-		lawsButton.setEnabled(enable);
-		startButton.setEnabled(enable);
-		stopButton.setEnabled(enable);
-		exitButton.setEnabled(enable);
-		stepSpinner.setEnabled(enable);
-		deltaTimeText.setEnabled(enable);
-		delaySpinner.setEnabled(enable);
+			loadButton.setEnabled(enable);
+			lawsButton.setEnabled(enable);
+			startButton.setEnabled(enable);
+			stopButton.setEnabled(enable);
+			exitButton.setEnabled(enable);
+			stepSpinner.setEnabled(enable);
+			deltaTimeText.setEnabled(enable);
+			delaySpinner.setEnabled(enable);
 //		clearButton.setEnabled(enable);
 	}
 	
