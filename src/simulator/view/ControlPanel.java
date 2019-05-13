@@ -95,21 +95,19 @@ public class ControlPanel extends JPanel implements SimulatorObserver{
 		loadButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(e.getSource() == loadButton) {
-					JFileChooser fileChooser = new JFileChooser("E:\\eclipse-workspace\\PhysicsSimulator_V2\\resources\\examples");
-					
-					int sel = fileChooser.showOpenDialog(null);
-					
-					if(sel == JFileChooser.APPROVE_OPTION) {
-						File file = fileChooser.getSelectedFile();
-						try(InputStream in = new FileInputStream(file)){
-							_ctrl.reset();
-							_ctrl.loadBodies(in);
-						}
-						catch(Exception ex) {
-							ex.getStackTrace();
-							JOptionPane.showMessageDialog(null, ex.getMessage(), "INVALID FILE", JOptionPane.ERROR_MESSAGE);
-						}
+				JFileChooser fileChooser = new JFileChooser("E:\\eclipse-workspace\\PhysicsSimulator_V2\\resources\\examples");
+				
+				int sel = fileChooser.showOpenDialog(null);
+				
+				if(sel == JFileChooser.APPROVE_OPTION) {
+					File file = fileChooser.getSelectedFile();
+					try(InputStream in = new FileInputStream(file)){
+						_ctrl.reset();
+						_ctrl.loadBodies(in);
+					}
+					catch(Exception ex) {
+						ex.getStackTrace();
+						JOptionPane.showMessageDialog(null, ex.getMessage(), "INVALID FILE", JOptionPane.ERROR_MESSAGE);
 					}
 				}
 			}
@@ -127,28 +125,26 @@ public class ControlPanel extends JPanel implements SimulatorObserver{
 		lawsButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(e.getSource() == lawsButton) {
-					Object[] options = new Object[_ctrl.getGravityLawsFactory().getInfo().size()];
-					int i = 0;
-					
+				Object[] options = new Object[_ctrl.getGravityLawsFactory().getInfo().size()];
+				int i = 0;
+				
+				for(JSONObject jo : _ctrl.getGravityLawsFactory().getInfo()) {
+					options[i] = jo.get("desc").toString();
+					i++;
+				}
+				
+				String n = (String) JOptionPane.showInputDialog(null,
+						"Select gravity laws to be used.",
+						"Gravity Laws Selector",
+						JOptionPane.INFORMATION_MESSAGE, null, options, null);
+				
+				if(n != null) {
 					for(JSONObject jo : _ctrl.getGravityLawsFactory().getInfo()) {
-						options[i] = jo.get("desc").toString();
-						i++;
-					}
-					
-					String n = (String) JOptionPane.showInputDialog(null,
-							"Select gravity laws to be used.",
-							"Gravity Laws Selector",
-							JOptionPane.INFORMATION_MESSAGE, null, options, null);
-					
-					if(n != null) {
-						for(JSONObject jo : _ctrl.getGravityLawsFactory().getInfo()) {
-							if(n.equals(jo.get("desc"))) {
-								_ctrl.setGravityLaws(jo);
-							}
+						if(n.equals(jo.get("desc"))) {
+							_ctrl.setGravityLaws(jo);
 						}
 					}
-				}	
+				}
 			}
 		});
 		
@@ -164,39 +160,38 @@ public class ControlPanel extends JPanel implements SimulatorObserver{
 		startButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(e.getSource() == startButton) {
-					SwingUtilities.invokeLater(new Runnable() {	
-						@Override
-						public void run() {
-							loadButton.setEnabled(false);
-							lawsButton.setEnabled(false);
-							startButton.setEnabled(false);
-							stepSpinner.setEnabled(false);
-							deltaTimeText.setEnabled(false);
-							delaySpinner.setEnabled(false);
-//							clearButton.setEnabled(false);
-						}
-					});
-					
-					_ctrl.setDeltaTime(_deltaTime);
-	
-					_thread = new Thread(new Runnable() {
-						@Override
-						public void run() {
-							run_sim(Integer.parseInt(stepSpinner.getValue().toString()),
-									Long.parseLong(delaySpinner.getValue().toString()));
-							//setEnableAll(true);
-							_thread = null;
-						}
-					});
-					
-					_thread.start();
-					
+				loadButton.setEnabled(false);
+				lawsButton.setEnabled(false);
+				startButton.setEnabled(false);
+				stepSpinner.setEnabled(false);
+				deltaTimeText.setEnabled(false);
+				delaySpinner.setEnabled(false);
+//				clearButton.setEnabled(false);
+				
+				_ctrl.setDeltaTime(_deltaTime);
+
+				_thread = new Thread(new Runnable() {
+					@Override
+					public void run() {
+						run_sim(Integer.parseInt(stepSpinner.getValue().toString()),
+								Long.parseLong(delaySpinner.getValue().toString()));
+						
+						SwingUtilities.invokeLater(new Runnable() {		
+							public void run() {
+								setEnableAll(true);								
+							}
+						});
+						
+						_thread = null;
+					}
+				});
+				
+				_thread.start();
+				
 //					_stopped = false;				
 //					
 //					run_sim(Integer.parseInt(stepSpinner.getValue().toString()),
 //							Long.parseLong(delaySpinner.getValue().toString()));
-				}	
 			}
 		});
 		
@@ -212,9 +207,7 @@ public class ControlPanel extends JPanel implements SimulatorObserver{
 		stopButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(e.getSource() == stopButton) {
-					if(_thread != null) _thread.interrupt();
-				}	
+				if(_thread != null) _thread.interrupt();
 			}
 		});
 		
@@ -230,9 +223,7 @@ public class ControlPanel extends JPanel implements SimulatorObserver{
 //		clearButton.addActionListener(new ActionListener() {
 //			@Override
 //			public void actionPerformed(ActionEvent e) {
-//				if(e.getSource() == clearButton) {
-//					_ctrl.reset();
-//				}	
+//				_ctrl.reset();	
 //			}
 //		});
 //		
@@ -248,17 +239,15 @@ public class ControlPanel extends JPanel implements SimulatorObserver{
 		exitButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(e.getSource() == exitButton) {
-					Object[] options = {"Yes", "No"};
-					int n = JOptionPane.showOptionDialog(null, "Do you want to exit?",
-							"EXIT?",
-							JOptionPane.YES_NO_OPTION,
-							JOptionPane.WARNING_MESSAGE,
-							null,
-							options, 
-							options[1]);
-					if(n == JOptionPane.YES_OPTION) System.exit(0);
-				}	
+				Object[] options = {"Yes", "No"};
+				int n = JOptionPane.showOptionDialog(null, "Do you want to exit?",
+						"EXIT?",
+						JOptionPane.YES_NO_OPTION,
+						JOptionPane.WARNING_MESSAGE,
+						null,
+						options, 
+						options[1]);
+				if(n == JOptionPane.YES_OPTION) System.exit(0);
 			}
 		});
 		
@@ -273,7 +262,7 @@ public class ControlPanel extends JPanel implements SimulatorObserver{
 		
 		stepSpinner.setPreferredSize(new Dimension(70,20));
 		
-		stepSpinner.setModel(new SpinnerNumberModel(150, 0, Integer.MAX_VALUE, 1));
+		stepSpinner.setModel(new SpinnerNumberModel(1500, 0, Integer.MAX_VALUE, 1));
 		
 		toolBar.add(stepLabel);
 		toolBar.add(stepSpinner);
@@ -287,7 +276,7 @@ public class ControlPanel extends JPanel implements SimulatorObserver{
 		
 		delaySpinner.setPreferredSize(new Dimension(50, 20));
 		
-		delaySpinner.setModel(new SpinnerNumberModel(0, 0, 1000, 1));
+		delaySpinner.setModel(new SpinnerNumberModel(1, 1, 1000, 1));
 		
 		toolBar.add(delayLabel);
 		toolBar.add(delaySpinner);
@@ -301,14 +290,12 @@ public class ControlPanel extends JPanel implements SimulatorObserver{
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(e.getSource() == deltaTimeText) {
-					try {
-						_deltaTime = Double.parseDouble(deltaTimeText.getText());
-					}
-					catch (Exception ex1) {
-						// Delta time is not a double so it sets default value
-						_deltaTime = _deltaTimeDefaultValue;
-					}
+				try {
+					_deltaTime = Double.parseDouble(deltaTimeText.getText());
+				}
+				catch (Exception ex1) {
+					// Delta time is not a double so it sets default value
+					_deltaTime = _deltaTimeDefaultValue;
 				}
 			}
 		});
@@ -319,7 +306,7 @@ public class ControlPanel extends JPanel implements SimulatorObserver{
 	
 	// other private/protected method
 	private void run_sim(int n, long delay) {
-		if (n > 0 && !Thread.interrupted()) {
+		while (n > 0 && !Thread.interrupted()) {
 			try {
 				_ctrl.run(1);
 			} catch (Exception e) {
@@ -331,23 +318,17 @@ public class ControlPanel extends JPanel implements SimulatorObserver{
 					}
 				});
 				
-				// Enable all buttons
-				setEnableAll(true);
 				return;
 			}
 			
 			try {
 				Thread.sleep(delay);
-				run_sim(n-1, delay);
+				//run_sim(n-1, delay);
 			} catch (InterruptedException e) {
-				setEnableAll(true);
 				return;
 			}
+			n--;
 			
-		}
-		else {
-			// Enable all buttons
-			setEnableAll(true);
 		}
 	}
 	

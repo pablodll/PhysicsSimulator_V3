@@ -57,10 +57,10 @@ public class BodiesTableModel extends AbstractTableModel implements SimulatorObs
 	
 	@Override
 	public void onRegister(List<Body> bodies, double time, double dt, String gLawsDesc) {
-		_bodies = new ArrayList<Body>(bodies);
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
+				_bodies = bodies;
 				fireTableStructureChanged();
 			}
 		});
@@ -68,10 +68,10 @@ public class BodiesTableModel extends AbstractTableModel implements SimulatorObs
 
 	@Override
 	public void onReset(List<Body> bodies, double time, double dt, String gLawsDesc) {
-		_bodies = new ArrayList<Body>(bodies);
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
+				_bodies = bodies;
 				fireTableStructureChanged();
 			}
 		});		
@@ -79,10 +79,10 @@ public class BodiesTableModel extends AbstractTableModel implements SimulatorObs
 
 	@Override
 	public void onBodyAdded(List<Body> bodies, Body b) {
-		_bodies.add(b);
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
+				_bodies = bodies;
 				fireTableStructureChanged();				
 			}
 		});
@@ -93,7 +93,7 @@ public class BodiesTableModel extends AbstractTableModel implements SimulatorObs
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				_bodies = new ArrayList<Body>(bodies);
+				_bodies = bodies;
 				fireTableStructureChanged();
 				
 			}
